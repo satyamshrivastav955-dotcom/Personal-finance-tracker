@@ -23,69 +23,93 @@
     .nav-active svg { color: #2563EB; }
     .nav-active span { color: #2563EB; font-weight: 600; }
     .fab-btn { box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
-    .fab-btn:hover { transform: scale(1.05); }
+    .tab-active { background: #2563EB; color: white; font-weight: 600; }
+    .chart-wrap { position: relative; width: 100%; max-height: 220px; }
+    .chart-wrap canvas { max-height: 220px !important; }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-gray-950 min-h-screen pb-24">
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-30 bg-slate-50 dark:bg-gray-950 px-4 pt-4 pb-3">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold text-slate-900 dark:text-white">Analytics</h1>
-      <!-- Month Navigation -->
-      <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl px-3 py-1.5 border border-slate-100 dark:border-slate-800 shadow-sm">
-        <button id="prevMonth" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-0.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <span id="analyticsMonth" class="text-sm font-semibold text-slate-700 dark:text-slate-200 min-w-[100px] text-center"></span>
-        <button id="nextMonth" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-0.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-    </div>
-  </header>
+  <div class="max-w-lg mx-auto">
 
-  <main class="px-4 space-y-4 page-enter">
-
-    <!-- Total Spent Card -->
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl p-5 text-white shadow-lg shadow-blue-500/20">
-      <p class="text-blue-100 text-xs font-medium uppercase tracking-wide">Total Spent</p>
-      <div class="flex items-end justify-between mt-1">
-        <p id="analyticsTotalSpent" class="text-4xl font-bold">₹0</p>
-        <span id="spendingChange" class="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">No prev. data</span>
-      </div>
-      <p class="text-blue-100 text-xs mt-1">This Month</p>
-    </div>
-
-    <!-- Pie / Doughnut Chart -->
-    <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
-      <h2 class="font-semibold text-slate-800 dark:text-slate-100 mb-4">Spending by Category</h2>
-      <div class="relative">
-        <canvas id="pieChart" height="220"></canvas>
-        <div id="pieEmpty" class="hidden absolute inset-0 flex items-center justify-center">
-          <p class="text-sm text-slate-400 dark:text-slate-500">No data for this month</p>
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 bg-slate-50 dark:bg-gray-950 px-4 pt-4 pb-3">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+        <!-- Month Nav -->
+        <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl px-3 py-1.5 border border-slate-100 dark:border-slate-800 shadow-sm">
+          <button id="prevMonth" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span id="analyticsMonth" class="text-sm font-semibold text-slate-700 dark:text-slate-200 min-w-[100px] text-center"></span>
+          <button id="nextMonth" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- 6-Month Bar Chart -->
-    <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
-      <h2 class="font-semibold text-slate-800 dark:text-slate-100 mb-4">6-Month Overview</h2>
-      <canvas id="barChart" height="180"></canvas>
-    </div>
+    <main class="px-4 space-y-4 page-enter">
 
-    <!-- Smart Insights -->
-    <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="w-7 h-7 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-          <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <!-- Summary Row -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-center">
+          <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Spent</p>
+          <p id="analyticsTotalSpent" class="text-lg font-bold text-slate-800 dark:text-white">₹0</p>
         </div>
-        <h2 class="font-semibold text-slate-800 dark:text-slate-100">Smart Insights</h2>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-center">
+          <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Income</p>
+          <p id="analyticsTotalIncome" class="text-lg font-bold text-emerald-500">₹0</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-center">
+          <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">vs Last</p>
+          <p id="spendingChange" class="text-lg font-bold text-slate-800 dark:text-white">—</p>
+        </div>
       </div>
-      <div id="insightsContainer" class="space-y-2"></div>
-    </div>
 
-  </main>
+      <!-- Time Range Tabs -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div class="flex bg-slate-100 dark:bg-gray-800 rounded-xl m-3 p-0.5 gap-0.5">
+          <button class="range-tab tab-active flex-1 py-2 text-xs rounded-lg transition-all" data-range="daily">Daily</button>
+          <button class="range-tab flex-1 py-2 text-xs text-slate-500 dark:text-slate-400 rounded-lg transition-all" data-range="weekly">Weekly</button>
+          <button class="range-tab flex-1 py-2 text-xs text-slate-500 dark:text-slate-400 rounded-lg transition-all" data-range="monthly">Monthly</button>
+          <button class="range-tab flex-1 py-2 text-xs text-slate-500 dark:text-slate-400 rounded-lg transition-all" data-range="6month">6 Month</button>
+        </div>
+        <div class="px-3 pb-3">
+          <div class="chart-wrap">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie Chart – compact -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+        <h2 class="font-semibold text-slate-800 dark:text-slate-100 text-sm mb-3">Spending by Category</h2>
+        <div class="flex items-center gap-4">
+          <div class="chart-wrap" style="max-width:150px; max-height:150px;">
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div id="pieLegend" class="flex-1 space-y-1.5 text-xs min-w-0"></div>
+        </div>
+        <div id="pieEmpty" class="hidden text-center py-4">
+          <p class="text-sm text-slate-400 dark:text-slate-500">No expenses this month</p>
+        </div>
+      </div>
+
+      <!-- Smart Insights -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h2 class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Smart Insights</h2>
+        </div>
+        <div id="insightsContainer" class="space-y-2"></div>
+      </div>
+
+    </main>
+
+  </div>
 
   <!-- BOTTOM NAV -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-slate-800 px-2 pt-2 pb-safe">
@@ -118,15 +142,5 @@
 
   <script src="js/firebase.js"></script>
   <script src="js/analytics.js"></script>
-  <script>
-    document.getElementById('currentMonthBtn')?.addEventListener('click', () => {
-      const now = new Date();
-      analyticsMonth = now.getMonth();
-      analyticsYear = now.getFullYear();
-      updateMonthDisplay();
-      loadAnalyticsData();
-    });
-  </script>
 </body>
 </html>
-
