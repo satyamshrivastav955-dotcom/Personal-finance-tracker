@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>SpendSmart – Profile &amp; Settings</title>
+  <meta name="description" content="Manage your SpendSmart profile, preferences, and import/export data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .page-enter { animation: fadeIn 0.3s ease both; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    ::-webkit-scrollbar { width: 0; }
+    .nav-active svg { color: #2563EB; }
+    .nav-active span { color: #2563EB; font-weight: 600; }
+    .fab-btn { box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+    .toggle-switch { appearance: none; width: 44px; height: 24px; border-radius: 12px; background: #E2E8F0; cursor: pointer; position: relative; transition: background 0.2s; }
+    .toggle-switch:checked { background: #2563EB; }
+    .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle-switch:checked::after { transform: translateX(20px); }
+    .dark .toggle-switch { background: #374151; }
+    .dark .toggle-switch:checked { background: #2563EB; }
+    .form-input:focus { outline:none; border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .form-input { transition: border-color 0.2s, box-shadow 0.2s; }
+    .settings-row { transition: background 0.15s; }
+    .settings-row:hover { background: rgba(148,163,184,0.08); }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-gray-950 min-h-screen pb-24">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-slate-50 dark:bg-gray-950 px-4 pt-4 pb-2">
+    <h1 class="text-xl font-bold text-slate-900 dark:text-white">Profile &amp; Settings</h1>
+  </header>
+
+  <main class="px-4 space-y-4 page-enter">
+
+    <!-- Profile Card -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+      <div class="flex items-center gap-4">
+        <div id="profileAvatar" class="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+          ?
+        </div>
+        <div class="flex-1 min-w-0">
+          <p id="profileName" class="font-bold text-slate-900 dark:text-white text-base truncate">Loading...</p>
+          <p id="profileEmail" class="text-sm text-slate-500 dark:text-slate-400 truncate">...</p>
+        </div>
+        <button onclick="promptEditName()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit name">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Preferences</h2>
+      </div>
+
+      <!-- Theme Toggle -->
+      <div class="settings-row flex items-center justify-between px-4 py-3.5 rounded-none">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Dark Mode</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Switch interface theme</p>
+          </div>
+        </div>
+        <input type="checkbox" id="themeToggle" class="toggle-switch" onchange="handleThemeToggle(this)" />
+      </div>
+
+      <!-- Currency -->
+      <div class="settings-row px-4 py-3.5 border-t border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Currency</p>
+        </div>
+        <select id="currencySelect" onchange="saveCurrency()" class="form-input w-full px-3 py-2.5 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-sm appearance-none cursor-pointer">
+          <option value="₹">₹ Indian Rupee (INR)</option>
+          <option value="$">$ US Dollar (USD)</option>
+          <option value="€">€ Euro (EUR)</option>
+          <option value="£">£ British Pound (GBP)</option>
+          <option value="¥">¥ Japanese Yen (JPY)</option>
+          <option value="₩">₩ Korean Won (KRW)</option>
+          <option value="A$">A$ Australian Dollar (AUD)</option>
+          <option value="CA$">CA$ Canadian Dollar (CAD)</option>
+          <option value="CHF">CHF Swiss Franc</option>
+          <option value="SGD">SGD Singapore Dollar</option>
+        </select>
+      </div>
+
+      <!-- Month Start Day -->
+      <div class="settings-row px-4 py-3.5 border-t border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Month starts on day</p>
+        </div>
+        <select id="startDaySelect" onchange="saveStartDay()" class="form-input w-full px-3 py-2.5 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-sm appearance-none cursor-pointer">
+          <!-- Filled by JS -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Monthly Budget Shortcut -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Budget</h2>
+      </div>
+      <div class="px-4 py-3.5">
+        <p class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Monthly Budget</p>
+        <div class="flex gap-2">
+          <input id="profileBudgetInput" type="number" min="0" step="100"
+            class="form-input flex-1 px-3 py-2.5 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-sm"
+            placeholder="Enter monthly budget" />
+          <button onclick="saveProfileBudget()" class="px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import / Export -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Import &amp; Export</h2>
+      </div>
+
+      <div class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Export CSV -->
+        <button onclick="exportCSV()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Export to CSV</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Download all transactions</p>
+          </div>
+          <svg class="w-4 h-4 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+
+        <!-- Import CSV -->
+        <button onclick="document.getElementById('importCSVInput').click()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Import from CSV</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Upload transaction CSV file</p>
+          </div>
+          <svg class="w-4 h-4 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <input type="file" id="importCSVInput" accept=".csv" class="hidden" onchange="importCSV(event)" />
+
+        <!-- Export PDF (Placeholder) -->
+        <button onclick="showPDFNote()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Export to PDF</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Generate financial report</p>
+          </div>
+          <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-medium">Soon</span>
+        </button>
+
+        <!-- Bank Import (Placeholder) -->
+        <button onclick="showBankNote()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Import Bank Statement</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Upload bank PDF / statement</p>
+          </div>
+          <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-medium">Soon</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Account</h2>
+      </div>
+      <div class="divide-y divide-slate-100 dark:divide-slate-800">
+        <button onclick="changePassword()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          </div>
+          <p class="text-sm font-medium text-slate-800 dark:text-slate-200 flex-1">Change Password</p>
+          <svg class="w-4 h-4 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button onclick="logout()" class="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </div>
+          <p class="text-sm font-semibold text-red-500 flex-1">Sign Out</p>
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 dark:text-slate-600 pb-2">SpendSmart v1.0 · Built with ❤️</p>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-slate-800 px-2 pt-2 pb-safe">
+    <div class="flex items-center justify-around max-w-sm mx-auto relative">
+      <a href="dashboard.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Home</span>
+      </a>
+      <a href="analytics.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Analytics</span>
+      </a>
+      <a href="dashboard.html" class="fab-btn -mt-6 w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg transition-transform">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      </a>
+      <a href="budget.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Budget</span>
+      </a>
+      <a href="split.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Split</span>
+      </a>
+      <a href="profile.html" class="nav-item nav-active flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span class="text-xs text-blue-600 font-semibold">Profile</span>
+      </a>
+    </div>
+  </nav>
+
+  <script src="js/firebase.js"></script>
+  <script>
+    applyTheme();
+
+    let profileUser = null;
+    let profileUserDoc = null;
+
+    // Fill start day options
+    (function() {
+      const sel = document.getElementById('startDaySelect');
+      for (let i = 1; i <= 28; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i === 1 ? '1st (Default)' : i + (i === 2 ? 'nd' : i === 3 ? 'rd' : 'th');
+        sel.appendChild(opt);
+      }
+    })();
+
+    // Theme toggle init
+    document.getElementById('themeToggle').checked = (localStorage.getItem('ss_theme') === 'dark');
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      profileUser = user;
+
+      const snap = await db.collection('users').doc(user.uid).get();
+      profileUserDoc = snap.exists ? snap.data() : {};
+
+      // Fill profile info
+      const name = profileUserDoc.name || user.displayName || 'User';
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('profileAvatar').textContent = name[0].toUpperCase();
+
+      // Fill settings
+      const curr = profileUserDoc.currency || '₹';
+      localStorage.setItem('ss_currency', curr);
+      document.getElementById('currencySelect').value = curr;
+      document.getElementById('startDaySelect').value = profileUserDoc.startDay || 1;
+      document.getElementById('profileBudgetInput').value = profileUserDoc.monthlyBudget || '';
+    });
+
+    function handleThemeToggle(toggle) {
+      const theme = toggle.checked ? 'dark' : 'light';
+      localStorage.setItem('ss_theme', theme);
+      applyTheme();
+      // Save to Firestore
+      if (profileUser) {
+        db.collection('users').doc(profileUser.uid).update({ theme }).catch(() => {});
+      }
+    }
+
+    async function saveCurrency() {
+      const currency = document.getElementById('currencySelect').value;
+      localStorage.setItem('ss_currency', currency);
+      if (profileUser) {
+        await db.collection('users').doc(profileUser.uid).update({ currency }).catch(() => {});
+        showToast('Currency updated!', 'success');
+      }
+    }
+
+    async function saveStartDay() {
+      const startDay = parseInt(document.getElementById('startDaySelect').value);
+      if (profileUser) {
+        await db.collection('users').doc(profileUser.uid).update({ startDay }).catch(() => {});
+        showToast('Start day saved!', 'success');
+      }
+    }
+
+    async function saveProfileBudget() {
+      const budget = parseFloat(document.getElementById('profileBudgetInput').value) || 0;
+      if (profileUser) {
+        await db.collection('users').doc(profileUser.uid).update({ monthlyBudget: budget }).catch(() => {});
+        showToast('Budget saved!', 'success');
+      }
+    }
+
+    function promptEditName() {
+      const current = document.getElementById('profileName').textContent;
+      const newName = prompt('Enter your name:', current);
+      if (!newName || !newName.trim()) return;
+      profileUser.updateProfile({ displayName: newName.trim() }).then(() => {
+        db.collection('users').doc(profileUser.uid).update({ name: newName.trim() });
+        document.getElementById('profileName').textContent = newName.trim();
+        document.getElementById('profileAvatar').textContent = newName.trim()[0].toUpperCase();
+        showToast('Name updated!', 'success');
+      }).catch(() => showToast('Failed to update name.', 'error'));
+    }
+
+    function changePassword() {
+      const email = profileUser.email;
+      if (!email) { showToast('No email associated.', 'error'); return; }
+      auth.sendPasswordResetEmail(email).then(() => {
+        showToast('Password reset email sent!', 'success');
+      }).catch(() => showToast('Failed to send email.', 'error'));
+    }
+
+    function logout() {
+      auth.signOut().then(() => window.location.href = 'index.html');
+    }
+
+    // ---- Export CSV ----
+    async function exportCSV() {
+      if (!profileUser) return;
+      showToast('Preparing export...', 'success');
+
+      try {
+        const snap = await db.collection('transactions')
+          .where('userId', '==', profileUser.uid)
+          .orderBy('date', 'desc')
+          .get();
+
+        const rows = [['Date', 'Type', 'Category', 'Amount', 'Note']];
+        snap.docs.forEach(doc => {
+          const d = doc.data();
+          const date = d.date?.toDate ? d.date.toDate() : new Date(d.date);
+          const cat = getCategoryById(d.category);
+          rows.push([
+            date.toLocaleDateString('en-IN'),
+            d.type,
+            cat.label,
+            d.amount,
+            `"${(d.note || '').replace(/"/g, '""')}"`
+          ]);
+        });
+
+        const csv = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `spendsmart-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        showToast(`Exported ${snap.docs.length} transactions!`, 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Export failed.', 'error');
+      }
+    }
+
+    // ---- Import CSV ----
+    async function importCSV(event) {
+      const file = event.target.files[0];
+      if (!file || !profileUser) return;
+
+      const text = await file.text();
+      const lines = text.split('\n').filter(l => l.trim());
+      if (lines.length < 2) { showToast('CSV is empty.', 'error'); return; }
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const dateIdx = headers.indexOf('date');
+      const typeIdx = headers.indexOf('type');
+      const catIdx = headers.indexOf('category');
+      const amtIdx = headers.indexOf('amount');
+      const noteIdx = headers.indexOf('note');
+
+      if (dateIdx < 0 || amtIdx < 0) {
+        showToast('CSV must have Date and Amount columns.', 'error');
+        return;
+      }
+
+      let imported = 0;
+      const batch = db.batch();
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        const amount = parseFloat(cols[amtIdx]);
+        if (isNaN(amount) || amount <= 0) continue;
+
+        const dateStr = cols[dateIdx]?.trim();
+        const date = new Date(dateStr);
+        if (isNaN(date)) continue;
+
+        const type = (cols[typeIdx] || 'expense').trim().toLowerCase();
+        const category = (cols[catIdx] || 'other').trim().toLowerCase();
+        const note = (cols[noteIdx] || '').trim().replace(/^"|"$/g, '');
+
+        // Try to match category
+        const matchedCat = CATEGORIES.find(c =>
+          c.label.toLowerCase().includes(category) || c.id === category
+        ) || CATEGORIES[CATEGORIES.length - 1];
+
+        const ref = db.collection('transactions').doc();
+        batch.set(ref, {
+          userId: profileUser.uid,
+          type: type === 'income' ? 'income' : 'expense',
+          amount,
+          category: matchedCat.id,
+          note,
+          date: firebase.firestore.Timestamp.fromDate(date),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        imported++;
+      }
+
+      try {
+        await batch.commit();
+        showToast(`Imported ${imported} transactions!`, 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Import failed.', 'error');
+      }
+
+      event.target.value = '';
+    }
+
+    function showPDFNote() {
+      showToast('PDF export coming soon!', 'warning');
+    }
+
+    function showBankNote() {
+      showToast('Bank import coming soon!', 'warning');
+    }
+
+    function showToast(message, type = 'success') {
+      const colors = { success: 'bg-emerald-500', error: 'bg-red-500', warning: 'bg-amber-500' };
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-white text-sm font-medium shadow-lg transition-all duration-300 opacity-0 translate-y-2 ${colors[type] || colors.success}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 50);
+      setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+  </script>
+</body>
+</html>
+

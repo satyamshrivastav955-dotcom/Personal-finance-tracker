@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>SpendSmart – Budget</title>
+  <meta name="description" content="Set and track your monthly category budgets with visual progress indicators." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .page-enter { animation: fadeIn 0.3s ease both; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    ::-webkit-scrollbar { width: 0; }
+    .nav-active svg { color: #2563EB; }
+    .nav-active span { color: #2563EB; font-weight: 600; }
+    .fab-btn { box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+    .modal-sheet { transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1); }
+    .modal-sheet.translate-y-0 { transform: translateY(0); }
+    .form-input:focus { outline:none; border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .form-input { transition: border-color 0.2s, box-shadow 0.2s; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-gray-950 min-h-screen pb-24">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-slate-50 dark:bg-gray-950 px-4 pt-4 pb-2">
+    <div class="flex justify-between items-center">
+      <h1 class="text-xl font-bold text-slate-900 dark:text-white">Monthly Budget</h1>
+    </div>
+  </header>
+
+  <main class="px-4 space-y-4 page-enter">
+
+    <!-- Overall Budget Card -->
+    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl p-5 text-white shadow-lg shadow-blue-500/20">
+      <p class="text-blue-100 text-xs font-medium uppercase tracking-wide">Overall Budget</p>
+      <div class="flex items-end justify-between mt-1 mb-3">
+        <p id="overallSpent" class="text-4xl font-bold">₹0</p>
+        <p id="overallBudgetOf" class="text-blue-100 text-sm">of ₹0</p>
+      </div>
+      <div class="h-2 bg-white/20 rounded-full overflow-hidden mb-2">
+        <div id="overallBar" class="h-full rounded-full bg-white/70 transition-all duration-700" style="width:0%"></div>
+      </div>
+      <p id="overallPct" class="text-blue-100 text-xs">0% used</p>
+    </div>
+
+    <!-- Monthly Budget Setting -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+      <h2 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Set Monthly Budget</h2>
+      <div class="flex gap-2">
+        <input id="monthlyBudgetInput" type="number" min="0" step="100"
+          class="form-input flex-1 px-4 py-2.5 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-sm"
+          placeholder="Enter total monthly budget" />
+        <button id="saveMonthlyBudget"
+          class="px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors whitespace-nowrap">
+          Save
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Budgets -->
+    <div>
+      <h2 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Category Budgets</h2>
+      <div id="categoryBudgetList" class="space-y-3">
+        <div class="flex items-center justify-center py-8">
+          <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Edit Category Budget Modal -->
+  <div id="budgetEditModal" class="hidden fixed inset-0 z-50 items-end bg-black/40 backdrop-blur-sm">
+    <div class="modal-sheet w-full bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-slate-900 dark:text-white text-base">Set Budget — <span id="editCatLabel"></span></h3>
+        <button id="closeBudgetModal" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="budgetEditForm">
+        <input type="hidden" id="editCatId" />
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Monthly Limit</label>
+          <input id="editCatLimit" type="number" min="0" step="100"
+            class="form-input w-full px-4 py-3 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-lg font-bold"
+            placeholder="0" />
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="clearCategoryBudget()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-sm">
+            Clear Limit
+          </button>
+          <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-slate-800 px-2 pt-2 pb-safe">
+    <div class="flex items-center justify-around max-w-sm mx-auto relative">
+      <a href="dashboard.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Home</span>
+      </a>
+      <a href="analytics.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Analytics</span>
+      </a>
+      <a href="dashboard.html" class="fab-btn -mt-6 w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg transition-transform">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      </a>
+      <a href="budget.html" class="nav-item nav-active flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <span class="text-xs text-blue-600 font-semibold">Budget</span>
+      </a>
+      <a href="split.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Split</span>
+      </a>
+      <a href="profile.html" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl">
+        <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span class="text-xs text-slate-400 dark:text-slate-500">Profile</span>
+      </a>
+    </div>
+  </nav>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/budget.js"></script>
+  <script>
+    function clearCategoryBudget() {
+      document.getElementById('editCatLimit').value = 0;
+      document.getElementById('budgetEditForm').dispatchEvent(new Event('submit'));
+    }
+    // Open modal with slide up animation
+    document.getElementById('budgetEditModal')?.addEventListener('transitionend', function(e) {});
+    const origEditFn = window.editCategoryBudget;
+    window.editCategoryBudget = function(catId, catLabel, currentLimit) {
+      if (origEditFn) origEditFn(catId, catLabel, currentLimit);
+      setTimeout(() => {
+        document.querySelector('#budgetEditModal .modal-sheet').classList.add('translate-y-0');
+      }, 10);
+    };
+    document.getElementById('closeBudgetModal')?.addEventListener('click', () => {
+      document.querySelector('#budgetEditModal .modal-sheet').classList.remove('translate-y-0');
+    });
+  </script>
+</body>
+</html>
+
